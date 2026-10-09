@@ -1,5 +1,6 @@
 // UI helpers: toasts, modals, confirm dialogs, pickers, loading & empty states.
 import { esc, debounce } from './utils.js';
+import { t } from './i18n.js';
 
 const $ = window.jQuery;
 
@@ -69,13 +70,13 @@ export function formModal({ title, body, submitLabel = 'Save', submitClass = 'bt
   });
 }
 
-export function confirmDialog(message, { title = 'Please confirm', okLabel = 'Confirm', okClass = 'btn-primary', html = false } = {}) {
+export function confirmDialog(message, { title = t('common.confirm'), okLabel = t('common.confirm'), okClass = 'btn-primary', html = false } = {}) {
   return new Promise((resolve) => {
     let ok = false;
     const m = modal({
       title, fullscreenMobile: false, scrollable: false,
       body: html ? message : `<p class="mb-0">${esc(message)}</p>`,
-      footer: `<button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn ${okClass} btn-ok">${esc(okLabel)}</button>`,
+      footer: `<button class="btn btn-light" data-bs-dismiss="modal">${t('common.cancel')}</button><button class="btn ${okClass} btn-ok">${esc(okLabel)}</button>`,
     });
     m.$el.find('.btn-ok').on('click', () => { ok = true; m.close(); });
     m.closed.then(() => resolve(ok));

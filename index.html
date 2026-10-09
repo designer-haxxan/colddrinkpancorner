@@ -3,27 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Offline-first point of sale with sales, purchases, stock, accounts and reports.">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Fast billing, udhaar khata and stock for cold drink and paan shops. Urdu and English. Works offline.">
+  <meta name="theme-color" content="#0b7a3b">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https://eposwala.com https://cdn.jsdelivr.net; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SaleAPP POS">
+  <meta name="apple-mobile-web-app-title" content="Cold Drink POS">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link id="bs-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.1.0/index.css">
   <link rel="stylesheet" href="css/app.css">
-  <title>SaleAPP POS</title>
+  <link rel="stylesheet" href="css/shop.css">
+  <title>Cold Drink & Paan Shop POS</title>
 </head>
 <body>
   <!-- Splash / loading screen -->
   <div id="splash">
-    <div class="splash-logo"><img src="icons/icon-192.png" alt=""></div>
-    <div class="splash-name mt-3">SaleAPP POS</div>
+    <div class="splash-scene" aria-hidden="true">
+      <div class="splash-bottle"><span class="sp-cap"></span><span class="sp-body"><span class="sp-fill"></span><i class="sp-b b1"></i><i class="sp-b b2"></i><i class="sp-b b3"></i></span></div>
+    </div>
+    <div class="splash-name mt-3">Cold Drink &amp; Paan POS</div>
     <div class="splash-bar" role="status"><span class="visually-hidden">Loading</span></div>
     <div id="splash-error" class="text-danger small mt-3 px-4 text-center"></div>
   </div>
@@ -32,78 +35,91 @@
   <div id="view-login" class="d-none">
     <div class="auth">
       <div class="auth-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><div class="grid-lines"></div></div>
+      <button type="button" id="lang-btn-login" class="btn btn-sm btn-outline-light rounded-pill lang-btn"><i class="bi bi-translate me-1"></i><span data-i18n="app.lang_button">اردو</span></button>
       <div class="auth-inner">
         <section class="auth-hero">
           <div class="brand-row">
             <div class="brand-mark"><img src="icons/icon-192.png" alt=""></div>
-            <div><div class="name">SaleAPP POS</div><div class="tag">Point of Sale · Inventory · Accounts</div></div>
+            <div><div class="name" data-i18n="app.name">Cold Drink &amp; Paan POS</div><div class="tag" data-i18n="app.tag">Billing · Udhaar · Stock</div></div>
           </div>
-          <h1>Run your whole business <span class="grad">from one app.</span></h1>
-          <p class="lead-sm">Sell, buy, track stock and keep your accounts — for any shop, wholesaler or distributor. Works even without internet.</p>
+          <h1><span data-i18n="login.hero_title">Run your shop</span> <span class="grad" data-i18n="login.hero_accent">from one app.</span></h1>
+          <p class="lead-sm" data-i18n="login.hero_lead">Fast billing for cold drinks, paan and daily needs. Track udhaar and stock. Works without internet.</p>
           <ul class="feature-chips">
-            <li><i class="bi bi-wifi-off"></i>Works offline</li>
-            <li><i class="bi bi-box-seam"></i>Inventory</li>
-            <li><i class="bi bi-journal-check"></i>Accounts &amp; ledgers</li>
-            <li><i class="bi bi-upc-scan"></i>Barcode</li>
-            <li><i class="bi bi-printer"></i>Bluetooth receipts</li>
-            <li><i class="bi bi-translate"></i><span class="ur-chip">اردو رسید</span></li>
+            <li><i class="bi bi-wifi-off"></i><span data-i18n="login.chip_offline">Works offline</span></li>
+            <li><i class="bi bi-lightning-charge"></i><span data-i18n="login.chip_billing">Fast billing</span></li>
+            <li><i class="bi bi-journal-check"></i><span data-i18n="login.chip_udhaar">Udhaar khata</span></li>
+            <li><i class="bi bi-box-seam"></i><span data-i18n="login.chip_stock">Stock</span></li>
+            <li><i class="bi bi-printer"></i><span data-i18n="login.chip_print">Receipt printing</span></li>
+            <li><i class="bi bi-translate"></i><span data-i18n="login.chip_urdu">Urdu &amp; English</span></li>
           </ul>
           <div class="hero-art" aria-hidden="true">
             <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset="1" stop-color="#ffffff" stop-opacity=".06"/></linearGradient>
-                <linearGradient id="hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5b4fc"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
-                <linearGradient id="hg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#c026d3"/></linearGradient>
+                <linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".24"/><stop offset="1" stop-color="#ffffff" stop-opacity=".07"/></linearGradient>
+                <linearGradient id="hgGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b91c1c"/><stop offset=".5" stop-color="#ef4444"/><stop offset="1" stop-color="#991b1b"/></linearGradient>
+                <linearGradient id="hgIce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0f2fe"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient>
+                <linearGradient id="hgLeaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
               </defs>
+              <!-- Bill card -->
               <g class="float-a">
-                <rect x="40" y="30" width="330" height="220" rx="22" fill="url(#hg1)" stroke="rgba(255,255,255,.25)"/>
-                <circle cx="66" cy="54" r="5" fill="#f87171"/><circle cx="82" cy="54" r="5" fill="#fbbf24"/><circle cx="98" cy="54" r="5" fill="#34d399"/>
-                <rect x="64" y="78" width="120" height="12" rx="6" fill="rgba(255,255,255,.55)"/>
-                <rect x="64" y="98" width="80" height="22" rx="8" fill="#fff"/>
-                <rect class="bar" x="70"  y="170" width="26" height="54"  rx="6" fill="url(#hg2)" style="animation-delay:.1s"/>
-                <rect class="bar" x="110" y="150" width="26" height="74"  rx="6" fill="url(#hg2)" style="animation-delay:.2s"/>
-                <rect class="bar" x="150" y="180" width="26" height="44"  rx="6" fill="url(#hg2)" style="animation-delay:.3s"/>
-                <rect class="bar" x="190" y="130" width="26" height="94"  rx="6" fill="url(#hg2)" style="animation-delay:.4s"/>
-                <rect class="bar" x="230" y="145" width="26" height="79"  rx="6" fill="url(#hg2)" style="animation-delay:.5s"/>
-                <rect class="bar" x="270" y="110" width="26" height="114" rx="6" fill="url(#hg3)" style="animation-delay:.6s"/>
-                <rect class="bar" x="310" y="125" width="26" height="99"  rx="6" fill="url(#hg2)" style="animation-delay:.7s"/>
+                <rect x="290" y="34" width="200" height="236" rx="18" fill="url(#hg1)" stroke="rgba(255,255,255,.28)"/>
+                <rect x="312" y="60" width="110" height="10" rx="5" fill="rgba(255,255,255,.7)"/>
+                <rect x="312" y="80" width="60" height="6" rx="3" fill="rgba(255,255,255,.35)"/>
+                <g class="bill-line" style="animation-delay:.1s"><rect x="312" y="104" width="156" height="14" rx="5" fill="#fff"/><rect x="442" y="107" width="26" height="8" rx="4" fill="#15803d"/></g>
+                <g class="bill-line" style="animation-delay:.3s"><rect x="312" y="126" width="156" height="14" rx="5" fill="#fff"/><rect x="442" y="129" width="26" height="8" rx="4" fill="#15803d"/></g>
+                <g class="bill-line" style="animation-delay:.5s"><rect x="312" y="148" width="156" height="14" rx="5" fill="#fff"/><rect x="442" y="151" width="26" height="8" rx="4" fill="#15803d"/></g>
+                <rect x="312" y="180" width="156" height="2" fill="rgba(255,255,255,.5)"/>
+                <rect x="312" y="200" width="70" height="16" rx="6" fill="rgba(255,255,255,.5)"/>
+                <rect x="392" y="196" width="76" height="24" rx="8" fill="#22c55e"/>
+                <path d="M404 208 l6 6 l12 -12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class="tick"/>
               </g>
+              <!-- Cola bottle -->
+              <g class="bottle-wrap">
+                <rect x="132" y="22" width="34" height="16" rx="4" fill="#cbd5e1"/>
+                <path d="M122 46 q0 -6 6 -6 h44 q6 0 6 6 v10 q0 6 4 10 q10 10 10 26 v118 q0 14 -14 14 h-42 q-14 0 -14 -14 v-118 q0 -16 10 -26 q4 -4 4 -10z" fill="url(#hgGlass)" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
+                <rect x="124" y="136" width="58" height="62" rx="8" fill="#ffffff" opacity=".92"/>
+                <text x="153" y="160" text-anchor="middle" font-size="13" font-weight="800" fill="#b91c1c">COLA</text>
+                <text x="153" y="181" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">1.5L</text>
+                <rect x="132" y="70" width="8" height="58" rx="4" fill="rgba(255,255,255,.55)"/>
+                <circle class="bubble b-a" cx="146" cy="200" r="3"/><circle class="bubble b-b" cx="158" cy="210" r="2.2"/>
+                <circle class="bubble b-c" cx="138" cy="222" r="2.6"/><circle class="bubble b-d" cx="164" cy="228" r="1.8"/>
+              </g>
+              <!-- Ice cubes -->
               <g class="float-b">
-                <path d="M392 70 h96 a10 10 0 0 1 10 10 v170 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 l-12 8 l-12 -8 V80 a10 10 0 0 1 10 -10z" fill="#fff"/>
-                <rect x="410" y="92" width="64" height="9" rx="4.5" fill="#6366f1"/>
-                <rect x="404" y="114" width="76" height="6" rx="3" fill="#e5e7eb"/><rect x="404" y="128" width="58" height="6" rx="3" fill="#e5e7eb"/>
-                <rect x="404" y="142" width="70" height="6" rx="3" fill="#e5e7eb"/><rect x="404" y="156" width="48" height="6" rx="3" fill="#e5e7eb"/>
-                <rect x="404" y="178" width="76" height="2" fill="#c7d2fe"/>
-                <rect x="404" y="190" width="40" height="10" rx="5" fill="#111827"/><rect x="452" y="190" width="28" height="10" rx="5" fill="#16a34a"/>
-                <g transform="translate(410 208)"><rect width="2" height="18" fill="#111827"/><rect x="5" width="1" height="18" fill="#111827"/><rect x="9" width="3" height="18" fill="#111827"/><rect x="15" width="1" height="18" fill="#111827"/><rect x="19" width="2" height="18" fill="#111827"/><rect x="24" width="1" height="18" fill="#111827"/><rect x="28" width="3" height="18" fill="#111827"/><rect x="34" width="2" height="18" fill="#111827"/><rect x="39" width="1" height="18" fill="#111827"/><rect x="43" width="3" height="18" fill="#111827"/><rect x="49" width="2" height="18" fill="#111827"/><rect x="54" width="1" height="18" fill="#111827"/><rect x="58" width="3" height="18" fill="#111827"/></g>
+                <rect x="60" y="210" width="36" height="36" rx="8" fill="url(#hgIce)" opacity=".92" transform="rotate(-12 78 228)"/>
+                <rect x="62" y="212" width="8" height="8" rx="2" fill="#fff" opacity=".7"/>
+                <rect x="96" y="250" width="28" height="28" rx="7" fill="url(#hgIce)" opacity=".85" transform="rotate(14 110 264)"/>
               </g>
-              <g class="float-b"><circle cx="34" cy="272" r="26" fill="#fbbf24"/><circle cx="34" cy="272" r="18" fill="none" stroke="#fde68a" stroke-width="3"/><text x="34" y="279" text-anchor="middle" font-size="18" font-weight="800" fill="#92400e">Rs</text></g>
-              <g class="float-a"><rect x="300" y="262" width="62" height="50" rx="8" fill="#22d3ee"/><path d="M300 278 h62" stroke="#0e7490" stroke-width="3"/><rect x="322" y="262" width="18" height="16" fill="#67e8f9"/></g>
+              <!-- Paan leaf -->
+              <g class="leaf-sway"><path d="M40 90 q34 -46 78 -28 q-14 46 -78 28 z" fill="url(#hgLeaf)"/><path d="M46 88 q28 -22 62 -24" stroke="#14532d" stroke-width="2" fill="none" opacity=".55"/></g>
+              <!-- Coins -->
+              <g class="coin c1"><circle cx="262" cy="282" r="20" fill="#fbbf24"/><circle cx="262" cy="282" r="14" fill="none" stroke="#fde68a" stroke-width="3"/><text x="262" y="288" text-anchor="middle" font-size="14" font-weight="800" fill="#92400e">Rs</text></g>
+              <g class="coin c2"><circle cx="428" cy="296" r="16" fill="#fbbf24"/><text x="428" y="301" text-anchor="middle" font-size="11" font-weight="800" fill="#92400e">Rs</text></g>
             </svg>
           </div>
         </section>
 
         <section class="auth-card" aria-labelledby="login-title">
-          <h2 id="login-title">Welcome back</h2>
-          <div class="sub">Sign in to your shop to continue</div>
+          <h2 id="login-title" data-i18n="login.title">Welcome back</h2>
+          <div class="sub" data-i18n="login.sub">Sign in to open your shop</div>
           <div id="login-notice" class="alert alert-warning small d-none"></div>
           <form id="login-form" novalidate>
             <div class="field">
               <input type="text" id="login-username" name="username" placeholder=" " autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
               <i class="bi bi-person lead-icon"></i>
-              <label for="login-username">Username</label>
+              <label for="login-username" data-i18n="login.user">Username</label>
             </div>
             <div class="field">
               <input type="password" id="login-password" name="password" placeholder=" " autocomplete="current-password" required>
               <i class="bi bi-lock lead-icon"></i>
-              <label for="login-password">Password</label>
+              <label for="login-password" data-i18n="login.pass">Password</label>
               <button type="button" class="btn btn-link field-action" id="toggle-pw" aria-label="Show password"><i class="bi bi-eye"></i></button>
             </div>
             <div id="login-error" class="alert alert-danger py-2 small d-none"></div>
-            <button type="submit" class="btn btn-grad btn-login w-100" id="login-btn"><span>Sign in</span><i class="bi bi-arrow-right"></i></button>
+            <button type="submit" class="btn btn-grad btn-login w-100" id="login-btn"><span data-i18n="login.btn">Sign in</span><i class="bi bi-arrow-right"></i></button>
           </form>
           <div class="auth-foot" id="login-conn"></div>
-          <div class="text-center small mt-2" style="color:#8a8fa3">Internet is needed to sign in. After that the app works offline.</div>
+          <div class="text-center small mt-2" style="color:#8a8fa3" data-i18n="login.net_note">Internet is needed to sign in. After that the app works offline.</div>
         </section>
       </div>
     </div>
@@ -112,39 +128,40 @@
   <!-- Application -->
   <div id="view-app" class="d-none">
     <aside id="sidebar" class="d-none d-lg-flex flex-column">
-      <div class="sidebar-brand"><div class="logo"><img src="icons/icon-192.png" alt=""></div> <span id="brand-name">SaleAPP POS</span></div>
+      <div class="sidebar-brand"><div class="logo"><img src="icons/icon-192.png" alt=""></div> <span id="brand-name">Cold Drink &amp; Paan POS</span></div>
       <nav class="nav flex-column flex-grow-1 overflow-auto nav-menu" aria-label="Main"></nav>
     </aside>
     <div class="app-main">
       <header class="app-topbar">
         <button class="btn btn-link text-body d-lg-none px-1" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas" aria-label="Menu"><i class="bi bi-list fs-4"></i></button>
-        <div class="fw-semibold text-truncate flex-grow-1" id="topbar-title">Dashboard</div>
+        <div class="fw-semibold text-truncate flex-grow-1" id="topbar-title" data-i18n="nav.dashboard">Home</div>
+        <button type="button" id="lang-btn" class="btn btn-sm btn-light rounded-pill lang-btn" aria-label="Language"><i class="bi bi-translate me-1"></i><span data-i18n="app.lang_button">اردو</span></button>
         <span id="conn-badge" class="badge rounded-pill conn-online" title="Connection status"><i class="bi bi-wifi"></i> <span>Online</span></span>
         <div class="dropdown">
           <button class="avatar-btn ms-1" id="user-avatar" data-bs-toggle="dropdown" aria-label="Account"><i class="bi bi-person"></i></button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><div class="dropdown-item-text small"><div class="fw-semibold" id="user-name"></div><div class="text-body-secondary" id="user-role"></div></div></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#/settings"><i class="bi bi-gear me-2"></i>Settings</a></li>
-            <li><button class="dropdown-item d-none" id="install-btn"><i class="bi bi-download me-2"></i>Install app</button></li>
-            <li><button class="dropdown-item text-danger" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Log out</button></li>
+            <li><a class="dropdown-item" href="#/settings"><i class="bi bi-gear me-2"></i><span data-i18n="nav.settings">Settings</span></a></li>
+            <li><button class="dropdown-item d-none" id="install-btn"><i class="bi bi-download me-2"></i><span data-i18n="shell.install">Install app</span></button></li>
+            <li><button class="dropdown-item text-danger" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i><span data-i18n="shell.logout">Log out</span></button></li>
           </ul>
         </div>
       </header>
       <main id="content" tabindex="-1"></main>
     </div>
     <nav id="bottom-nav" class="d-lg-none" aria-label="Quick navigation">
-      <a href="#/dashboard" data-route="dashboard"><i class="bi bi-house"></i><span>Home</span></a>
-      <a href="#/sales" data-route="sales"><i class="bi bi-receipt"></i><span>Sales</span></a>
-      <a href="#/pos" data-route="pos" class="nav-sell"><i class="bi bi-cart-plus-fill"></i><span>Sell</span></a>
-      <a href="#/products" data-route="products"><i class="bi bi-box-seam"></i><span>Products</span></a>
-      <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas"><i class="bi bi-grid"></i><span>More</span></a>
+      <a href="#/dashboard" data-route="dashboard"><i class="bi bi-house"></i><span data-i18n="shell.home">Home</span></a>
+      <a href="#/sales" data-route="sales"><i class="bi bi-receipt"></i><span data-i18n="shell.sales">Sales</span></a>
+      <a href="#/pos" data-route="pos" class="nav-sell"><i class="bi bi-cart-plus-fill"></i><span data-i18n="shell.sell">Sell</span></a>
+      <a href="#/products" data-route="products"><i class="bi bi-box-seam"></i><span data-i18n="shell.items">Items</span></a>
+      <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu-offcanvas"><i class="bi bi-grid"></i><span data-i18n="shell.more">More</span></a>
     </nav>
   </div>
 
   <div class="offcanvas offcanvas-start" tabindex="-1" id="menu-offcanvas" aria-labelledby="menu-title">
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="menu-title">Menu</h5>
+      <h5 class="offcanvas-title" id="menu-title" data-i18n="shell.menu">Menu</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body p-0"><nav class="nav flex-column nav-menu" aria-label="Main"></nav></div>

@@ -10,6 +10,7 @@ import * as Posting from '../services/posting.js';
 import * as Printer from '../printer/printer.js';
 import * as Scanner from '../scanner/scanner.js';
 import { partyPicker } from './parties.js';
+import { t, itemName, isUrdu } from '../core/i18n.js';
 
 const $ = window.jQuery;
 let st; let $root; let detachWedge = null; let payAccounts = [];
@@ -37,7 +38,7 @@ function layout() {
   return `<div class="pos">
     <div class="pos-left">
       <div class="d-flex gap-2 mb-2">
-        <input type="search" class="form-control browse-q" placeholder="Filter products…" autocomplete="off">
+        <input type="search" class="form-control browse-q" placeholder="${t('pos.filter')}" autocomplete="off">
         <button class="btn btn-light d-lg-none btn-close-browse" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="chips mb-2 cat-chips"></div>
@@ -47,7 +48,7 @@ function layout() {
       <div class="pos-search">
         <div class="input-group input-group-lg">
           <span class="input-group-text bg-body"><i class="bi bi-search"></i></span>
-          <input type="search" class="form-control pos-q" placeholder="Search or scan product" autocomplete="off" enterkeyhint="search" aria-label="Search product">
+          <input type="search" class="form-control pos-q" placeholder="${t('pos.search')}" autocomplete="off" enterkeyhint="search" aria-label="${t('pos.search')}">
           <button class="btn btn-outline-secondary btn-scan" title="Scan with camera" aria-label="Scan barcode"><i class="bi bi-upc-scan"></i></button>
           <button class="btn btn-outline-secondary btn-browse d-lg-none" title="Browse products" aria-label="Browse"><i class="bi bi-grid-3x3-gap"></i></button>
         </div>
@@ -59,12 +60,12 @@ function layout() {
         <div class="dropdown flex-grow-0">
           <button class="btn btn-light" data-bs-toggle="dropdown" aria-label="More options"><i class="bi bi-three-dots-vertical"></i></button>
           <ul class="dropdown-menu dropdown-menu-end">
-            ${sale ? `<li><button class="dropdown-item btn-hold"><i class="bi bi-pause-circle me-2"></i>Hold this sale</button></li>
+            ${sale ? `<li><button class="dropdown-item btn-hold"><i class="bi bi-pause-circle me-2"></i>${t('pos.hold')}</button></li>
             <li><button class="dropdown-item btn-price-mode"><i class="bi bi-tags me-2"></i>Use <span class="pm-label"></span> prices</button></li>` : ''}
-            <li><button class="dropdown-item btn-scan-cont"><i class="bi bi-upc-scan me-2"></i>Continuous scan</button></li>
-            <li><button class="dropdown-item btn-quick-add"><i class="bi bi-plus-square me-2"></i>Add new product</button></li>
+            <li><button class="dropdown-item btn-scan-cont"><i class="bi bi-upc-scan me-2"></i>${t('pos.continuous')}</button></li>
+            <li><button class="dropdown-item btn-quick-add"><i class="bi bi-plus-square me-2"></i>${t('pos.add_item')}</button></li>
             <li><hr class="dropdown-divider"></li>
-            <li><button class="dropdown-item text-danger btn-clear"><i class="bi bi-trash me-2"></i>${st.editId ? 'Cancel editing' : 'Clear cart'}</button></li>
+            <li><button class="dropdown-item text-danger btn-clear"><i class="bi bi-trash me-2"></i>${st.editId ? t('pos.cancel_edit') : t('pos.clear')}</button></li>
           </ul>
         </div>
       </div>
@@ -73,8 +74,8 @@ function layout() {
       <div class="pos-footer">
         <div class="d-flex justify-content-between small text-body-secondary footer-sub"></div>
         <div class="d-flex align-items-center gap-2 mt-1">
-          <div class="flex-grow-1"><div class="small text-body-secondary">Total</div><div class="total money"></div></div>
-          <button class="btn btn-primary btn-pay"><i class="bi bi-${sale ? 'cash-coin' : 'bag-check'} me-1"></i>${sale ? 'Pay' : 'Save'}</button>
+          <div class="flex-grow-1"><div class="small text-body-secondary">${t('pos.total')}</div><div class="total money"></div></div>
+          <button class="btn btn-primary btn-pay"><i class="bi bi-${sale ? 'cash-coin' : 'bag-check'} me-1"></i>${sale ? t('pos.pay') : 'Save'}</button>
         </div>
       </div>
     </div>
@@ -85,7 +86,7 @@ function renderLines() {
   const s = getSettings();
   const $l = $root.find('.pos-lines');
   if (!st.lines.length) {
-    $l.html(UI.emptyState(isSale() ? 'Cart is empty. Search, scan or browse to add products.' : 'No products yet. Search or scan to add purchased items.', 'cart'));
+    $l.html(UI.emptyState(isSale() ? t('pos.cart_empty') : 'No products yet. Search or scan to add purchased items.', 'cart'));
   } else {
     $l.html(st.lines.map((l, i) => {
       const p = Catalog.product(l.productId);
@@ -93,7 +94,7 @@ function renderLines() {
       const amt = round2(l.qty * l.rate - (l.discount || 0));
       return `<div class="cart-line" data-i="${i}">
         <div class="info btn-line" role="button" tabindex="0">
-          <div class="name">${esc(l.name)}</div>
+          <div class="name">${esc(p ? itemName(p) : l.name)}</div>
           <div class="meta">${fmtNum(l.rate)}${l.discount ? ` · disc ${fmtNum(l.discount)}` : ''}${p && p.trackStock !== false ? ` · <span class="${low ? 'text-danger fw-semibold' : ''}">stock ${fmtQty(p.stock)}</span>` : ''}</div>
         </div>
         <div class="qty-ctl"><button class="btn-dec" aria-label="Decrease">−</button><input class="qty-in" inputmode="decimal" value="${fmtQty(l.qty).replace(/,/g, '')}" aria-label="Quantity"><button class="btn-inc" aria-label="Increase">+</button></div>
@@ -105,11 +106,11 @@ function renderLines() {
 }
 
 function renderTotals() {
-  const t = totals();
-  $root.find('.total').text(`${cur()} ${fmtNum(t.total)}`);
-  $root.find('.footer-sub').html(`<span>${st.lines.length} item(s) · qty ${fmtQty(t.qtyTotal)}</span><span>${t.discount ? `Disc ${fmtNum(t.discount)} · ` : ''}${t.tax ? `Tax ${fmtNum(t.tax)}` : ''}</span>`);
+  const tot = totals();
+  $root.find('.total').text(`${cur()} ${fmtNum(tot.total)}`);
+  $root.find('.footer-sub').html(`<span>${st.lines.length} ${t('pos.items')} · qty ${fmtQty(tot.qtyTotal)}</span><span>${tot.discount ? `Disc ${fmtNum(tot.discount)} · ` : ''}${tot.tax ? `Tax ${fmtNum(tot.tax)}` : ''}</span>`);
   $root.find('.btn-pay').prop('disabled', !st.lines.length);
-  $root.find('.party-name').text(st.partyName || (isSale() ? 'Walk-in Customer' : 'Select supplier'));
+  $root.find('.party-name').text(st.partyName || (isSale() ? t('pos.walkin') : 'Select supplier'));
   $root.find('.pm-label').text(st.priceMode === 'retail' ? 'wholesale' : 'retail');
   persist();
 }
@@ -126,14 +127,14 @@ function renderGrid() {
   const q = $root.find('.browse-q').val() || '';
   const list = Catalog.searchProducts(q, { limit: 120, categoryId: browseCat });
   const cats = Catalog.allCategories();
-  $root.find('.cat-chips').html(`<span class="chip ${!browseCat ? 'active' : ''}" data-cat="">All</span>` + cats.map((c) => `<span class="chip ${browseCat === c.id ? 'active' : ''}" data-cat="${esc(c.id)}">${esc(c.name)}</span>`).join(''));
+  $root.find('.cat-chips').html(`<span class="chip ${!browseCat ? 'active' : ''}" data-cat="">${t('pos.all')}</span>` + cats.map((c) => `<span class="chip ${browseCat === c.id ? 'active' : ''}" data-cat="${esc(c.id)}">${esc(c.name)}</span>`).join(''));
   $root.find('.product-grid').html(list.length ? list.map((p) => `
     <button class="product-tile" data-id="${esc(p.id)}">
-      ${p.image ? `<img src="${p.image}" alt="" loading="lazy">` : `<div class="ph tint-${UI.tintFor(p.name)}">${esc(UI.initials(p.name))}</div>`}
-      <div class="n">${esc(p.name)}</div>
+      ${p.image ? `<img src="${p.image}" alt="" loading="lazy">` : p.emoji ? `<div class="ph emoji" aria-hidden="true">${esc(p.emoji)}</div>` : `<div class="ph tint-${UI.tintFor(p.name)}">${esc(UI.initials(p.name))}</div>`}
+      <div class="n ${isUrdu() && p.nameUr ? 'ur-name' : ''}">${esc(itemName(p))}</div>
       <div class="p">${fmtNum(priceOf(p))}</div>
-      ${p.trackStock !== false ? `<div class="s">Stock: ${fmtQty(p.stock)}</div>` : ''}
-    </button>`).join('') : UI.emptyState('No products', 'box'));
+      ${p.trackStock !== false ? `<div class="s">${t('pos.in_stock')}: ${fmtQty(p.stock)}</div>` : ''}
+    </button>`).join('') : UI.emptyState(t('pos.no_items'), 'box'));
 }
 
 // ---------- cart operations ----------
@@ -217,43 +218,43 @@ async function loadPayAccounts() {
 
 // ---------- checkout ----------
 async function checkout() {
-  const t = Posting.previewDoc(st.lines, 0, 0);
-  if (!t) { UI.toast('Please fix invalid quantities/rates in the cart.', 'warning'); return; }
+  const pre = Posting.previewDoc(st.lines, 0, 0);
+  if (!pre) { UI.toast('Please fix invalid quantities/rates in the cart.', 'warning'); return; }
   if (!st.lines.length) return;
   const sale = isSale();
   const s = getSettings();
   const canDate = Auth.can(sale ? 'sale.edit' : 'purchase.manage');
   const lastAcc = pref.get('payAccount', 'cash');
   const m = UI.modal({
-    title: sale ? 'Payment' : 'Save purchase', static: true,
+    title: sale ? t('pay.title') : 'Save purchase', static: true,
     body: `<form class="checkout" autocomplete="off">
-      <div class="text-center mb-2"><div class="small text-body-secondary">Amount due</div><div class="checkout-total money co-total"></div></div>
+      <div class="text-center mb-2"><div class="small text-body-secondary">${t('pay.due')}</div><div class="checkout-total money co-total"></div></div>
       <button type="button" class="btn btn-light w-100 mb-3 text-start co-party"><i class="bi bi-person me-2"></i><span></span><i class="bi bi-chevron-right float-end"></i></button>
       <div class="row g-2 mb-2">
-        <div class="col-6"><label class="form-label">Bill discount</label><div class="input-group"><input name="discount" class="form-control" inputmode="decimal" value="${st.discount || ''}" placeholder="0"><button type="button" class="btn btn-outline-secondary co-pct" title="Discount as percent">%</button></div></div>
-        <div class="col-6"><label class="form-label">Pay via</label><select name="account" class="form-select">${UI.options(payAccounts, st.payAccount || lastAcc)}</select></div>
+        <div class="col-6"><label class="form-label">${t('pay.discount')}</label><div class="input-group"><input name="discount" class="form-control" inputmode="decimal" value="${st.discount || ''}" placeholder="0"><button type="button" class="btn btn-outline-secondary co-pct" title="Discount as percent">%</button></div></div>
+        <div class="col-6"><label class="form-label">${t('pay.pay_via')}</label><select name="account" class="form-select">${UI.options(payAccounts, st.payAccount || lastAcc)}</select></div>
       </div>
       <div class="small text-body-secondary co-breakdown mb-2"></div>
-      <label class="form-label">${sale ? 'Amount received' : 'Amount paid'}</label>
+      <label class="form-label">${sale ? t('pay.received') : 'Amount paid'}</label>
       <input name="tendered" class="form-control form-control-lg mb-2 money" inputmode="decimal" placeholder="0">
       <div class="d-flex flex-wrap gap-2 pay-quick mb-2"></div>
       <div class="alert py-2 mb-2 co-result"></div>
       ${!sale ? `<div class="mb-2"><label class="form-label">Supplier invoice no.</label><input name="refNo" class="form-control" value="${esc(st.refNo)}"></div>` : ''}
       <div class="row g-2">
-        ${canDate ? `<div class="col-6"><label class="form-label">Date</label><input type="date" name="date" class="form-control" value="${esc(st.date)}" max="${today()}"></div>` : ''}
-        <div class="${canDate ? 'col-6' : 'col-12'}"><label class="form-label">Note</label><input name="note" class="form-control" value="${esc(st.note)}"></div>
+        ${canDate ? `<div class="col-6"><label class="form-label">${t('pay.date')}</label><input type="date" name="date" class="form-control" value="${esc(st.date)}" max="${today()}"></div>` : ''}
+        <div class="${canDate ? 'col-6' : 'col-12'}"><label class="form-label">${t('pay.note')}</label><input name="note" class="form-control" value="${esc(st.note)}"></div>
       </div>
-      ${sale ? `<div class="form-check form-switch mt-3"><input class="form-check-input" type="checkbox" id="co-print" ${s.printer.autoPrint ? 'checked' : ''}><label class="form-check-label" for="co-print">Print receipt</label></div>` : ''}
+      ${sale ? `<div class="form-check form-switch mt-3"><input class="form-check-input" type="checkbox" id="co-print" ${s.printer.autoPrint ? 'checked' : ''}><label class="form-check-label" for="co-print">${t('pay.print')}</label></div>` : ''}
       <div class="alert alert-danger py-2 small d-none co-error mt-2 mb-0"></div>
     </form>`,
-    footer: `<button class="btn btn-light" data-bs-dismiss="modal">Back</button><button class="btn btn-success btn-lg flex-grow-1 co-complete"><i class="bi bi-check2-circle me-1"></i>${sale ? 'Complete sale' : 'Save purchase'}</button>`,
+    footer: `<button class="btn btn-light" data-bs-dismiss="modal">${t('pay.back')}</button><button class="btn btn-success btn-lg flex-grow-1 co-complete"><i class="bi bi-check2-circle me-1"></i>${sale ? t('pay.complete') : 'Save purchase'}</button>`,
   });
   const $m = m.$el;
   let tenderedTouched = st.tendered !== null && st.editId;
   const calc = () => Posting.previewDoc(st.lines, num($m.find('[name=discount]').val()), taxRate());
   const update = () => {
     const c = calc();
-    $m.find('.co-party span').text(st.partyName || (sale ? 'Walk-in Customer' : 'No supplier (cash purchase)'));
+    $m.find('.co-party span').text(st.partyName || (sale ? t('pos.walkin') : 'No supplier (cash purchase)'));
     if (!c) { $m.find('.co-total').text('—'); $m.find('.co-result').attr('class', 'alert alert-danger py-2 mb-2 co-result').text('Discount cannot exceed the subtotal.'); $m.find('.co-complete').prop('disabled', true); return; }
     $m.find('.co-total').text(`${cur()} ${fmtNum(c.total)}`);
     $m.find('.co-breakdown').text(`Subtotal ${fmtNum(c.subtotal)}${c.discount ? ` − discount ${fmtNum(c.discount)}` : ''}${c.tax ? ` + tax ${fmtNum(c.tax)} (${c.taxRate}%)` : ''}`);
@@ -262,16 +263,16 @@ async function checkout() {
     const tendered = num($tin.val());
     const diff = round2(tendered - c.total);
     let cls = 'success'; let msg;
-    if (diff >= 0) msg = sale ? `Change: <b>${cur()} ${fmtNum(diff)}</b>` : (diff > 0 ? '<b>Paid amount exceeds total</b>' : 'Fully paid');
-    else if (st.partyId) { cls = 'warning'; msg = `${sale ? 'Balance due' : 'Payable'}: <b>${cur()} ${fmtNum(-diff)}</b> (added to ${sale ? 'customer' : 'supplier'} account)`; }
-    else { cls = 'danger'; msg = `Short by ${cur()} ${fmtNum(-diff)}. Select a ${sale ? 'customer' : 'supplier'} for credit.`; }
+    if (diff >= 0) msg = sale ? `${t('pay.change')}: <b class="change-val">${cur()} ${fmtNum(diff)}</b>` : (diff > 0 ? '<b>Paid amount exceeds total</b>' : 'Fully paid');
+    else if (st.partyId) { cls = 'warning'; msg = `${t('pay.balance')}: <b>${cur()} ${fmtNum(-diff)}</b> (${t('pay.udhaar_note')})`; }
+    else { cls = 'danger'; msg = `${t('pay.short')} ${cur()} ${fmtNum(-diff)}. ${t('pay.pick_customer')}`; }
     if (!sale && diff > 0) cls = 'danger';
     $m.find('.co-result').attr('class', `alert alert-${cls} py-2 mb-2 co-result`).html(msg);
     $m.find('.co-complete').prop('disabled', cls === 'danger');
     const quick = new Set([c.total]);
     if (sale) [10, 50, 100, 500, 1000, 5000].forEach((u) => { const v = Math.ceil(c.total / u) * u; if (v > c.total && quick.size < 5) quick.add(v); });
-    $m.find('.pay-quick').html([...quick].map((v, i) => `<button type="button" class="btn btn-outline-primary" data-v="${v}">${i === 0 ? 'Exact' : fmtNum(v)}</button>`).join('')
-      + (st.partyId ? `<button type="button" class="btn btn-outline-secondary" data-v="0">${sale ? 'Credit' : 'Unpaid'}</button>` : ''));
+    $m.find('.pay-quick').html([...quick].map((v, i) => `<button type="button" class="btn btn-outline-primary" data-v="${v}">${i === 0 ? t('pay.exact') : fmtNum(v)}</button>`).join('')
+      + (st.partyId ? `<button type="button" class="btn btn-outline-secondary" data-v="0">${sale ? t('pay.credit_btn') : 'Unpaid'}</button>` : ''));
   };
   $m.on('input', '[name=discount]', update);
   $m.on('input', '[name=tendered]', () => { tenderedTouched = true; update(); });
@@ -335,14 +336,15 @@ async function checkout() {
 function afterSave(doc) {
   const sale = isSale();
   const m = UI.modal({
-    title: sale ? 'Sale completed' : 'Purchase saved', fullscreenMobile: false, scrollable: false,
-    body: `<div class="text-center"><i class="bi bi-check-circle-fill text-success display-5"></i>
+    title: sale ? t('pay.done_title') : 'Purchase saved', fullscreenMobile: false, scrollable: false,
+    body: `<div class="text-center">
+      ${sale ? '<div class="coin-burst" aria-hidden="true"><i>Rs</i><i>Rs</i><i>Rs</i><i>Rs</i><i>Rs</i><span class="tick-big"><i class="bi bi-check-circle-fill"></i></span></div>' : '<i class="bi bi-check-circle-fill text-success display-5"></i>'}
       <div class="h5 mt-2 mb-0">${esc(doc.number)}</div><div class="text-body-secondary">${cur()} ${fmtNum(doc.total)}</div>
-      ${doc.change ? `<div class="alert alert-success mt-3 mb-0 py-2 fs-5">Change: <b>${cur()} ${fmtNum(doc.change)}</b></div>` : ''}
-      ${doc.balance ? `<div class="alert alert-warning mt-3 mb-0 py-2">Balance due: <b>${cur()} ${fmtNum(doc.balance)}</b></div>` : ''}</div>`,
-    footer: `<button class="btn btn-outline-secondary btn-print"><i class="bi bi-printer me-1"></i>Print</button>
-      <a class="btn btn-outline-secondary" href="#/${sale ? 'sales' : 'purchases'}/${doc.id}"><i class="bi bi-eye me-1"></i>View</a>
-      <button class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">New ${sale ? 'sale' : 'purchase'}</button>`,
+      ${doc.change ? `<div class="alert alert-success mt-3 mb-0 py-2 fs-5">${t('pay.done_change')}: <b>${cur()} ${fmtNum(doc.change)}</b></div>` : ''}
+      ${doc.balance ? `<div class="alert alert-warning mt-3 mb-0 py-2">${t('pay.done_balance')}: <b>${cur()} ${fmtNum(doc.balance)}</b></div>` : ''}</div>`,
+    footer: `<button class="btn btn-outline-secondary btn-print"><i class="bi bi-printer me-1"></i>${t('pay.print_btn')}</button>
+      <a class="btn btn-outline-secondary" href="#/${sale ? 'sales' : 'purchases'}/${doc.id}"><i class="bi bi-eye me-1"></i>${t('pay.view')}</a>
+      <button class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">${sale ? t('pay.new_sale') : 'New purchase'}</button>`,
   });
   m.$el.find('.btn-print').on('click', () => Printer.printDocument(sale ? 'sale' : 'purchase', doc));
   m.$el.find('a').on('click', () => m.close());
@@ -455,6 +457,7 @@ export default {
     $root.on('click', '.cat-chips [data-cat]', function () { browseCat = this.dataset.cat || null; renderGrid(); });
     $root.on('click', '.product-tile', function () {
       addProduct(Catalog.product(this.dataset.id));
+      this.classList.remove('is-added'); void this.offsetWidth; this.classList.add('is-added');
       if (!window.matchMedia('(min-width: 992px)').matches) UI.toast('Added', 'success', 800);
     });
     detachWedge = Scanner.attachWedge(addByCode);

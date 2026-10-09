@@ -575,7 +575,7 @@ export async function saveProduct(data) {
     if (data.id && !old) throw new AppError('Product not found.');
     const now = nowISO();
     const trackStock = data.trackStock !== false;
-    const p = { ...(old || { createdAt: now, stock: 0 }), id, name, nameLc: lc(name), sku, barcode, categoryId: data.categoryId || '', unit: clean(data.unit, 20) || 'pcs',
+    const p = { ...(old || { createdAt: now, stock: 0 }), id, name, nameLc: lc(name), nameUr: clean(data.nameUr, 150), emoji: clean(data.emoji, 8), sku, barcode, categoryId: data.categoryId || '', unit: clean(data.unit, 20) || 'pcs',
       purchasePrice, salePrice, wholesalePrice, minStock: round3(num(data.minStock)), openingStock: trackStock ? openingStock : 0, trackStock,
       image: data.image === undefined ? (old?.image || '') : data.image, active: data.active === false ? 0 : 1, updatedAt: now };
     const openRef = 'open:' + id;

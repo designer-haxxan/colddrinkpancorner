@@ -6,6 +6,8 @@ import * as Auth from '../services/auth.js';
 import * as Catalog from '../services/catalog.js';
 import * as Posting from '../services/posting.js';
 import * as Scanner from '../scanner/scanner.js';
+import { t, itemName } from '../core/i18n.js';
+import { loadStarterItems } from '../core/starter.js';
 
 const $ = window.jQuery;
 const UNITS = ['pcs', 'kg', 'g', 'ltr', 'ml', 'box', 'pack', 'dozen', 'm', 'ft', 'pair', 'set'];
@@ -28,7 +30,9 @@ export async function editProduct(product = null, prefill = {}) {
   return UI.formModal({
     title: product ? 'Edit product' : 'New product', size: 'lg',
     body: `<div class="row g-2">
-      <div class="col-12"><label class="form-label">Product name *</label><input name="name" class="form-control" required maxlength="150" value="${esc(p.name)}"></div>
+      <div class="col-8"><label class="form-label">Product name *</label><input name="name" class="form-control" required maxlength="150" value="${esc(p.name)}"></div>
+      <div class="col-4"><label class="form-label">${t('items.icon')}</label><input name="emoji" class="form-control text-center" maxlength="8" value="${esc(p.emoji || '')}" placeholder="🥤"></div>
+      <div class="col-12"><label class="form-label">${t('items.name_ur')}</label><input name="nameUr" class="form-control" dir="rtl" maxlength="150" value="${esc(p.nameUr || '')}"></div>
       <div class="col-6 col-md-4"><label class="form-label">SKU / code</label><input name="sku" class="form-control" value="${esc(p.sku)}"></div>
       <div class="col-6 col-md-4"><label class="form-label">Barcode</label><div class="input-group">
         <input name="barcode" class="form-control" value="${esc(p.barcode)}" inputmode="numeric">
@@ -103,9 +107,9 @@ async function manageCategories() {
 async function renderList(el) {
   const $el = $(el).off();
   const canEdit = Auth.can('product.edit');
-  $el.html(UI.pageHeader('Products', canEdit ? `<button class="btn btn-light btn-sm btn-cats"><i class="bi bi-tags"></i><span class="d-none d-sm-inline"> Categories</span></button><button class="btn btn-primary btn-sm btn-add"><i class="bi bi-plus-lg"></i> Add</button>` : '') + `
+  $el.html(UI.pageHeader(t('items.title'), canEdit ? `<button class="btn btn-light btn-sm btn-cats"><i class="bi bi-tags"></i><span class="d-none d-sm-inline"> ${t('items.cats')}</span></button><button class="btn btn-primary btn-sm btn-add"><i class="bi bi-plus-lg"></i> ${t('items.add')}</button>` : '') + `
     <div class="filters">
-      <div class="input-group flex-grow-2"><input type="search" class="form-control q" placeholder="Search name, SKU, barcode…"><button class="btn btn-outline-secondary btn-scan" aria-label="Scan"><i class="bi bi-upc-scan"></i></button></div>
+      <div class="input-group flex-grow-2"><input type="search" class="form-control q" placeholder="${t('items.search')}"><button class="btn btn-outline-secondary btn-scan" aria-label="Scan"><i class="bi bi-upc-scan"></i></button></div>
       <select class="form-select f-cat"><option value="">All categories</option>${UI.options(Catalog.allCategories(), '')}</select>
       <select class="form-select f-status"><option value="active">Active</option><option value="low">Low stock</option><option value="out">Out of stock</option><option value="inactive">Inactive</option><option value="all">All</option></select>
     </div>
@@ -127,17 +131,25 @@ async function renderList(el) {
     pager($el.find('.list'), list, (p) => {
       const low = p.trackStock !== false && p.stock <= (p.minStock || 0);
       return `<button class="list-row" data-id="${esc(p.id)}">
-        ${p.image ? `<img class="thumb" src="${p.image}" alt="" loading="lazy">` : UI.avatar(p.name)}
-        <div class="main"><div class="title">${esc(p.name)} ${p.active ? '' : '<span class="badge text-bg-secondary">Inactive</span>'}</div>
+        ${p.image ? `<img class="thumb" src="${p.image}" alt="" loading="lazy">` : p.emoji ? `<div class="avatar round emoji-av" aria-hidden="true">${esc(p.emoji)}</div>` : UI.avatar(p.name)}
+        <div class="main"><div class="title">${esc(itemName(p))} ${p.active ? '' : '<span class="badge text-bg-secondary">Inactive</span>'}</div>
           <div class="sub">${esc([p.sku, p.barcode, Catalog.category(p.categoryId)?.name].filter(Boolean).join(' · ') || '—')}</div></div>
         <div class="end"><div class="fw-semibold money">${money(p.salePrice)}</div>
           <div class="sub ${low ? 'text-danger fw-semibold' : ''}">${p.trackStock === false ? 'service' : `${fmtQty(p.stock)} ${esc(p.unit)}`}</div></div></button>`;
-    }, 60, UI.emptyState('No products found', 'box-seam', canEdit ? '<button class="btn btn-primary btn-sm mt-3 btn-add">Add product</button>' : ''));
+    }, 60, UI.emptyState(t('items.empty'), 'box-seam', canEdit ? `<button class="btn btn-primary btn-sm mt-3 btn-starter"><i class="bi bi-magic me-1"></i>${t('items.starter')}</button>` : ''));
   };
   draw();
   $el.on('input', '.q', debounce(draw, 150));
   $el.on('change', '.f-cat, .f-status', draw);
   $el.on('click', '.btn-add', async () => { if (await editProduct()) draw(); });
+  $el.on('click', '.btn-starter', async () => {
+    if (!await UI.confirmDialog(t('items.starter_confirm'), { title: t('items.starter'), okLabel: t('common.confirm') })) return;
+    try {
+      const n = await UI.withLoading(() => loadStarterItems(), t('common.loading'));
+      UI.toast(n ? t('items.starter_done') : t('items.starter_none'), n ? 'success' : 'info');
+      renderList(el);
+    } catch (e) { UI.toastError(e); }
+  });
   $el.on('click', '.btn-cats', async () => { await manageCategories(); renderList(el); });
   $el.on('click', '.btn-scan', async () => {
     const code = await Scanner.scan(); if (!code) return;

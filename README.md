@@ -1,4 +1,19 @@
-# SaleAPP POS
+# Cold Drink & Paan Shop POS
+
+Offline-first, mobile-first billing app for cold drink and paan (corner) shops in Pakistan, as a static PWA (no build step). Urdu and English.
+
+### Shop version (1.4.0)
+
+- **Language:** tap **اردو / English** in the top bar or on the login screen. Urdu switches the layout to right-to-left and uses Jameel Noori Nastaleeq. The choice is kept per device (`pref.lang`).
+- **Translated:** login, menu, dashboard, sell screen, payment dialog, sale-complete screen, items list and item form, confirm dialogs. Item names have an optional Urdu name (`nameUr`), shown on sell tiles and in search.
+- **Still English:** the Sales, Purchases, Returns, Customers, Suppliers, Stock, Cash book, Accounts, Reports, Backup and Settings pages. Their labels are only partly translated, so the Urdu version is not yet complete for those screens. Add keys to `js/i18n/en.js` and `js/i18n/ur.js`, then use `t('key')` in the module.
+- **Item icons:** each item can have an emoji (e.g. 🥤, 🌿). Tiles show the emoji, which makes billing quicker for non-technical staff.
+- **Starter items:** on the Items page, **Load shop items** adds cold drink, water and ice, paan, snack, dairy and mobile-load items with sample Rs prices. It skips any item whose name already exists. **The prices are placeholders, not verified market prices. Check and change them before use.** Stock tracking is off for starter items, so the first sale is not blocked; turn it on per item once you enter opening stock.
+- **Udhaar:** a sale to a customer can be part-paid. The balance goes to that customer's udhaar (credit) account.
+- **Data:** the IndexedDB schema is unchanged (still v2). Existing data upgrades without changes. New fields (`emoji`, `nameUr`) are simply stored on item records.
+- **Look:** flag green and cola red palette, animated shop hero on the login screen, rising fizz on the dashboard, coin burst when a sale is saved. All animations respect *reduce motion*.
+
+### Original feature list
 
 Offline-first, mobile-first Point of Sale as a static PWA (no build step).
 HTML5 · ES modules · jQuery · Bootstrap 5 · Bootstrap Icons · IndexedDB · Service Worker · eposwala login API.

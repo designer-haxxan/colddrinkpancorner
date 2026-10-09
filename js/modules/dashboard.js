@@ -4,6 +4,7 @@ import * as UI from '../core/ui.js';
 import { esc, fmtNum, fmtQty, fmtTime, fmtDate, today, localDate, round2, debounce } from '../core/utils.js';
 import { cur } from '../core/views.js';
 import { pref } from '../core/settings.js';
+import { t, isUrdu, itemName } from '../core/i18n.js';
 import * as Auth from '../services/auth.js';
 import * as Catalog from '../services/catalog.js';
 import * as Posting from '../services/posting.js';
@@ -124,83 +125,85 @@ export default {
     const lastBackup = pref.get('lastBackupAt');
     const backupDays = lastBackup ? Math.floor((Date.now() - new Date(lastBackup)) / 86400000) : null;
     const hour = new Date().getHours();
-    const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const greet = isUrdu() ? t('dash.hello') : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
     const M = (n) => `data-count="${round2(n)}" data-money="1"`;
+    const bills = (n) => `${n} ${n === 1 ? t('dash.bill') : t('dash.bills')}`;
 
     const tile = (href, icon, tint, title, sub, perm) => (perm && !Auth.can(perm) ? '' : `<div class="col-6 col-md-4 col-xl-3">
       <a class="hub-tile" href="${href}"><div class="icon-chip tint-${tint}"><i class="bi bi-${icon}"></i></div>
-      <div class="min-w-0"><div class="t">${title}</div><div class="s">${sub}</div></div></a></div>`);
+      <div class="min-w-0"><div class="t">${esc(title)}</div><div class="s">${sub}</div></div></a></div>`);
     const kpi = (icon, tint, label, valueAttr, href) => `<div class="col-6 col-lg-3"><${href ? `a href="${href}"` : 'div'} class="stat-card card-body d-block text-decoration-none p-3 h-100">
-      <div class="kpi"><div class="icon-chip tint-${tint}"><i class="bi bi-${icon}"></i></div><div class="min-w-0"><div class="l">${label}</div><div class="v money" ${valueAttr}>0</div></div></div></${href ? 'a' : 'div'}></div>`;
+      <div class="kpi"><div class="icon-chip tint-${tint}"><i class="bi bi-${icon}"></i></div><div class="min-w-0"><div class="l">${esc(label)}</div><div class="v money" ${valueAttr}>0</div></div></div></${href ? 'a' : 'div'}></div>`;
 
     $el.html(`
       <div class="hero-card">
+        <div class="fizz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-          <div><div class="hello">${greet}, ${esc(u.name.split(' ')[0])}</div><div class="date">${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
-          <span class="pill"><i class="bi bi-${navigator.onLine ? 'cloud-check' : 'wifi-off'}"></i>${navigator.onLine ? 'Online' : 'Offline'}</span>
+          <div><div class="hello">${greet}, ${esc(u.name.split(' ')[0])}</div><div class="date">${new Date().toLocaleDateString(isUrdu() ? 'ur-PK' : undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+          <span class="pill"><i class="bi bi-${navigator.onLine ? 'cloud-check' : 'wifi-off'}"></i>${navigator.onLine ? t('shell.online') : t('shell.offline')}</span>
         </div>
-        <div class="lbl">Today's sales</div>
+        <div class="lbl">${t('dash.today_sales')}</div>
         <div class="big money" ${M(f.sales)}>0</div>
         <div class="d-flex flex-wrap gap-2 mt-2 mb-3">
-          <span class="pill"><i class="bi bi-receipt"></i>${f.salesCount} invoice${f.salesCount === 1 ? '' : 's'}</span>
-          <span class="pill"><i class="bi bi-arrow-down-circle"></i>In ${esc(cur())} ${fmtNum(f.cashIn)}</span>
-          <span class="pill"><i class="bi bi-arrow-up-circle"></i>Out ${esc(cur())} ${fmtNum(f.cashOut)}</span>
+          <span class="pill"><i class="bi bi-receipt"></i>${bills(f.salesCount)}</span>
+          <span class="pill"><i class="bi bi-arrow-down-circle"></i>${t('dash.cash_in')} ${esc(cur())} ${fmtNum(f.cashIn)}</span>
+          <span class="pill"><i class="bi bi-arrow-up-circle"></i>${t('dash.cash_out')} ${esc(cur())} ${fmtNum(f.cashOut)}</span>
         </div>
         <div class="d-flex flex-wrap gap-2">
-          ${Auth.can('sale.create') ? '<a class="btn hero-cta" href="#/pos"><i class="bi bi-cart-plus me-1"></i>New sale</a>' : ''}
-          ${Auth.can('purchase.manage') ? '<a class="btn btn-outline-light" href="#/purchase/new"><i class="bi bi-bag-plus me-1"></i>Purchase</a>' : ''}
-          ${Auth.can('voucher.create') ? '<a class="btn btn-outline-light d-none d-sm-inline-block" href="#/vouchers"><i class="bi bi-cash-coin me-1"></i>Cash book</a>' : ''}
+          ${Auth.can('sale.create') ? `<a class="btn hero-cta" href="#/pos"><i class="bi bi-cart-plus me-1"></i>${t('dash.new_sale')}</a>` : ''}
+          ${Auth.can('purchase.manage') ? `<a class="btn btn-outline-light" href="#/purchase/new"><i class="bi bi-bag-plus me-1"></i>${t('dash.purchase')}</a>` : ''}
+          ${Auth.can('voucher.create') ? `<a class="btn btn-outline-light d-none d-sm-inline-block" href="#/vouchers"><i class="bi bi-cash-coin me-1"></i>${t('dash.cashbook')}</a>` : ''}
         </div>
       </div>
-      ${!navigator.onLine ? '<div class="alert alert-secondary py-2 small"><i class="bi bi-wifi-off me-1"></i>You are offline. Everything you do is saved on this device.</div>' : ''}
+      ${!navigator.onLine ? `<div class="alert alert-secondary py-2 small"><i class="bi bi-wifi-off me-1"></i>${t('shell.offline')}</div>` : ''}
       <div class="legacy-hint"></div>
-      ${Auth.can('backup.export') && (backupDays === null || backupDays >= 7) ? `<div class="alert alert-warning py-2 small d-flex align-items-center gap-2"><i class="bi bi-shield-exclamation"></i><div class="flex-grow-1">${backupDays === null ? 'No backup has been made on this device yet.' : `Last backup was ${backupDays} days ago.`} Your data only lives on this device.</div><a class="btn btn-sm btn-warning" href="#/backup">Back up</a></div>` : ''}
+      ${Auth.can('backup.export') && (backupDays === null || backupDays >= 7) ? `<div class="alert alert-warning py-2 small d-flex align-items-center gap-2"><i class="bi bi-shield-exclamation"></i><div class="flex-grow-1">${t('dash.backup_warn')}</div><a class="btn btn-sm btn-warning" href="#/backup">${t('dash.back_up')}</a></div>` : ''}
 
-      <div class="section-title"><h2>Business hub</h2></div>
+      <div class="section-title"><h2>${t('dash.hub')}</h2></div>
       <div class="row g-2 stagger">
-        ${tile('#/sales', 'receipt', 'indigo', 'Sales', `${f.salesCount} today · ${esc(cur())} ${fmtNum(f.sales)}`)}
-        ${tile('#/purchases', 'bag-check', 'violet', 'Purchases', `${f.purchasesCount} today · ${esc(cur())} ${fmtNum(f.purchases)}`, 'purchase.manage')}
-        ${tile('#/products', 'box-seam', 'cyan', 'Products', `${prods.length} active items`)}
-        ${tile('#/stock', 'boxes', low.length ? 'red' : 'green', 'Inventory', low.length ? `${low.length} low / out of stock` : 'All stock levels fine')}
-        ${tile('#/customers', 'people', 'pink', 'Customers', `${customers} · due ${esc(cur())} ${fmtNum(rec)}`)}
-        ${tile('#/suppliers', 'truck', 'slate', 'Suppliers', `${suppliers} · payable ${esc(cur())} ${fmtNum(pay)}`, 'purchase.manage')}
-        ${tile('#/accounts', 'bank', 'green', 'Accounts', `Cash & bank ${esc(cur())} ${fmtNum(cash)}`, 'account.manage')}
-        ${tile('#/vouchers', 'cash-coin', 'amber', 'Cash book', 'Receipts & payments', 'voucher.create')}
-        ${tile('#/returns', 'arrow-return-left', 'red', 'Returns', f.saleReturns ? `${esc(cur())} ${fmtNum(f.saleReturns)} today` : 'Sale & purchase returns')}
-        ${tile('#/reports', 'bar-chart-line', 'indigo', 'Reports', 'Sales, stock, profit & ledgers', 'reports.view')}
-        ${tile('#/backup', 'cloud-arrow-down', 'cyan', 'Backup', backupDays === null ? 'Not backed up yet' : `Last ${backupDays}d ago`, 'backup.export')}
-        ${tile('#/settings', 'gear', 'slate', 'Settings', 'Shop, printer, tax')}
+        ${tile('#/sales', 'receipt', 'indigo', t('dash.t_sales'), `${bills(f.salesCount)} · ${esc(cur())} ${fmtNum(f.sales)}`)}
+        ${tile('#/purchases', 'bag-check', 'violet', t('dash.t_purchases'), `${f.purchasesCount} · ${esc(cur())} ${fmtNum(f.purchases)}`, 'purchase.manage')}
+        ${tile('#/products', 'box-seam', 'cyan', t('dash.t_items'), `${prods.length} · ${esc(cur())}`)}
+        ${tile('#/stock', 'boxes', low.length ? 'red' : 'green', t('dash.t_stock'), low.length ? `${low.length} ${t('dash.low_stock')}` : t('dash.stock_ok'))}
+        ${tile('#/customers', 'people', 'pink', t('dash.t_customers'), `${customers} · ${esc(cur())} ${fmtNum(rec)}`)}
+        ${tile('#/suppliers', 'truck', 'slate', t('dash.t_suppliers'), `${suppliers} · ${esc(cur())} ${fmtNum(pay)}`, 'purchase.manage')}
+        ${tile('#/accounts', 'bank', 'green', t('dash.t_accounts'), `${esc(cur())} ${fmtNum(cash)}`, 'account.manage')}
+        ${tile('#/vouchers', 'cash-coin', 'amber', t('dash.t_cashbook'), '', 'voucher.create')}
+        ${tile('#/returns', 'arrow-return-left', 'red', t('dash.t_returns'), f.saleReturns ? `${esc(cur())} ${fmtNum(f.saleReturns)}` : '')}
+        ${tile('#/reports', 'bar-chart-line', 'indigo', t('dash.t_reports'), '', 'reports.view')}
+        ${tile('#/backup', 'cloud-arrow-down', 'cyan', t('dash.t_backup'), backupDays === null ? '' : `${backupDays}d`, 'backup.export')}
+        ${tile('#/settings', 'gear', 'slate', t('dash.t_settings'), '')}
       </div>
 
-      <div class="section-title"><h2>Overview</h2></div>
+      <div class="section-title"><h2>${t('dash.overview')}</h2></div>
       <div class="row g-2 stagger">
-        ${kpi('person-down', 'amber', 'Receivables', M(rec), Auth.can('reports.view') ? '#/reports/receivables' : '#/customers')}
-        ${Auth.can('purchase.manage') ? kpi('truck', 'red', 'Payables', M(pay), Auth.can('reports.view') ? '#/reports/payables' : null) : ''}
-        ${kpi('boxes', 'indigo', 'Stock value', M(stockValue), '#/stock')}
-        ${kpi('activity', 'cyan', 'Transactions today', `data-count="${f.txCount}"`, null)}
+        ${kpi('person-down', 'amber', t('dash.receivable'), M(rec), Auth.can('reports.view') ? '#/reports/receivables' : '#/customers')}
+        ${Auth.can('purchase.manage') ? kpi('truck', 'red', t('dash.payable'), M(pay), Auth.can('reports.view') ? '#/reports/payables' : null) : ''}
+        ${kpi('boxes', 'indigo', t('dash.stock_value'), M(stockValue), '#/stock')}
+        ${kpi('activity', 'cyan', t('dash.tx_today'), `data-count="${f.txCount}"`, null)}
       </div>
 
       <div class="row g-3 mt-1">
         <div class="col-lg-8"><div class="card viz-card h-100">
-          <div class="viz-head"><div><div class="ttl">Sales — last 7 days</div><div class="sub">Total ${esc(cur())} ${fmtNum(wk.days.reduce((s, d) => s + d.total, 0))} · ${wk.days.reduce((s, d) => s + d.count, 0)} invoices</div></div>
-            <a class="small fw-semibold text-decoration-none" href="#/reports/sales">Report <i class="bi bi-chevron-right"></i></a></div>
+          <div class="viz-head"><div><div class="ttl">${t('dash.week_chart')}</div><div class="sub">${esc(cur())} ${fmtNum(wk.days.reduce((s, d) => s + d.total, 0))} · ${bills(wk.days.reduce((s, d) => s + d.count, 0))}</div></div>
+            <a class="small fw-semibold text-decoration-none" href="#/reports/sales">${t('dash.view_all')} <i class="bi bi-chevron-right"></i></a></div>
           <div class="viz week-chart"></div>
-          <details class="viz-table"><summary>Show as table</summary>
-            <table class="table table-sm table-report mt-2 mb-0"><thead><tr><th>Date</th><th class="num">Invoices</th><th class="num">Sales</th></tr></thead>
+          <details class="viz-table"><summary>${t('dash.view_all')}</summary>
+            <table class="table table-sm table-report mt-2 mb-0"><thead><tr><th>Date</th><th class="num">${t('dash.bills')}</th><th class="num">${t('dash.today_sales')}</th></tr></thead>
             <tbody>${wk.days.map((d) => `<tr><td>${esc(fmtDate(d.date))}</td><td class="num">${d.count}</td><td class="num">${fmtNum(d.total)}</td></tr>`).join('')}</tbody></table></details>
         </div></div>
         <div class="col-lg-4"><div class="card viz-card h-100">
-          <div class="viz-head"><div><div class="ttl">Top products</div><div class="sub">By sales amount, last 7 days</div></div></div>
+          <div class="viz-head"><div><div class="ttl">${t('dash.top_items')}</div><div class="sub">${t('dash.top_items_sub')}</div></div></div>
           ${wk.top.length ? wk.top.map((p) => `<div class="hbar"><div class="name">${esc(p.name)}</div><div class="amt money">${fmtNum(p.amount)}</div>
-            <div class="track"><div class="fill" style="width:${Math.max(3, (p.amount / wk.top[0].amount) * 100)}%"></div></div></div>`).join('') : UI.emptyState('No sales in the last 7 days', 'graph-up')}
+            <div class="track"><div class="fill" style="width:${Math.max(3, (p.amount / wk.top[0].amount) * 100)}%"></div></div></div>`).join('') : UI.emptyState(t('dash.no_sales_today'), 'graph-up')}
         </div></div>
       </div>
 
       <div class="row g-3 mt-1">
-        <div class="col-md-6"><div class="section-title mt-0"><h2>Recent sales</h2><a href="#/sales">View all</a></div>
-          <div class="list-card">${f.recent.map((s) => `<a class="list-row" href="#/sales/${encodeURIComponent(s.id)}">${UI.avatar(s.customerName, 'round')}<div class="main"><div class="title">${esc(s.customerName)}</div><div class="sub">${esc(s.number)} · ${fmtTime(s.createdAt)}</div></div><div class="end"><div class="fw-bold money">${fmtNum(s.total)}</div>${s.balance > 0.004 ? '<span class="badge text-bg-warning">Credit</span>' : '<span class="badge bg-success-subtle text-success-emphasis">Paid</span>'}</div></a>`).join('') || UI.emptyState('No sales yet today', 'receipt')}</div></div>
-        <div class="col-md-6"><div class="section-title mt-0"><h2>Low stock</h2><a href="#/stock">Inventory</a></div>
-          <div class="list-card">${low.slice(0, 6).map((p) => `<a class="list-row" href="#/stock/${encodeURIComponent(p.id)}">${UI.avatar(p.name)}<div class="main"><div class="title">${esc(p.name)}</div><div class="sub">Minimum ${fmtQty(p.minStock || 0)} ${esc(p.unit || '')}</div></div><div class="end"><span class="badge ${p.stock <= 0 ? 'text-bg-danger' : 'text-bg-warning'}"><i class="bi bi-${p.stock <= 0 ? 'x-octagon' : 'exclamation-triangle'} me-1"></i>${fmtQty(p.stock)} ${esc(p.unit || '')}</span></div></a>`).join('') || UI.emptyState('All stock levels are fine', 'check2-circle')}</div></div>
+        <div class="col-md-6"><div class="section-title mt-0"><h2>${t('dash.recent')}</h2><a href="#/sales">${t('dash.view_all')}</a></div>
+          <div class="list-card">${f.recent.map((s) => `<a class="list-row" href="#/sales/${encodeURIComponent(s.id)}">${UI.avatar(s.customerName, 'round')}<div class="main"><div class="title">${esc(s.customerName)}</div><div class="sub">${esc(s.number)} · ${fmtTime(s.createdAt)}</div></div><div class="end"><div class="fw-bold money">${fmtNum(s.total)}</div>${s.balance > 0.004 ? `<span class="badge text-bg-warning">${t('dash.credit')}</span>` : `<span class="badge bg-success-subtle text-success-emphasis">${t('dash.paid')}</span>`}</div></a>`).join('') || UI.emptyState(t('dash.no_sales_today'), 'receipt')}</div></div>
+        <div class="col-md-6"><div class="section-title mt-0"><h2>${t('dash.low_stock')}</h2><a href="#/stock">${t('dash.t_stock')}</a></div>
+          <div class="list-card">${low.slice(0, 6).map((p) => `<a class="list-row" href="#/stock/${encodeURIComponent(p.id)}">${p.emoji ? `<div class="avatar round emoji-av" aria-hidden="true">${esc(p.emoji)}</div>` : UI.avatar(p.name)}<div class="main"><div class="title">${esc(itemName(p))}</div><div class="sub">${esc(p.unit || '')}</div></div><div class="end"><span class="badge ${p.stock <= 0 ? 'text-bg-danger' : 'text-bg-warning'}"><i class="bi bi-${p.stock <= 0 ? 'x-octagon' : 'exclamation-triangle'} me-1"></i>${fmtQty(p.stock)} ${esc(p.unit || '')}</span></div></a>`).join('') || UI.emptyState(t('dash.stock_ok'), 'check2-circle')}</div></div>
       </div>`);
 
     UI.countUp(el, (v, node) => (node.dataset.money ? `${cur()} ${fmtNum(v)}` : String(Math.round(v))));

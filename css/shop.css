@@ -1,0 +1,94 @@
+/* Cold drink & paan shop additions: animations, emoji tiles, Urdu layout. Loaded after app.css. */
+
+/* Language switch (topbar + login) */
+.lang-btn { font-weight: 700; white-space: nowrap; }
+#lang-btn-login { position: absolute; top: 16px; inset-inline-end: 16px; z-index: 2; }
+#lang-btn { box-shadow: var(--shadow-sm); }
+
+/* Splash: bottle filling with fizz */
+#splash .splash-scene { width: 120px; height: 120px; display: grid; place-items: center; }
+#splash .splash-bottle { position: relative; width: 58px; height: 100px; animation: pop .6s var(--ease) both; }
+#splash .sp-cap { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 24px; height: 12px; border-radius: 4px; background: #cbd5e1; }
+#splash .sp-body { position: absolute; top: 12px; inset-inline: 0; bottom: 0; border-radius: 22px 22px 16px 16px; background: linear-gradient(90deg, #991b1b, #ef4444 50%, #991b1b); overflow: hidden; box-shadow: var(--shadow); }
+#splash .sp-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(255, 255, 255, .25); animation: fillUp 1.6s var(--ease) .2s forwards; }
+#splash .sp-b { position: absolute; bottom: 8px; width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .85; animation: bubbleUp 1.6s linear infinite; }
+#splash .b1 { left: 18px; animation-delay: .4s; }
+#splash .b2 { left: 30px; animation-delay: 1s; }
+#splash .b3 { left: 24px; animation-delay: 1.5s; width: 4px; height: 4px; }
+@keyframes fillUp { from { height: 0; } to { height: 70%; } }
+@keyframes bubbleUp { from { transform: translateY(0) scale(.8); opacity: 0; } 20% { opacity: .9; } to { transform: translateY(-80px) scale(1.1); opacity: 0; } }
+
+/* Login hero: bottle, bubbles, bill, coins, leaf */
+.hero-art .bottle-wrap { animation: bob 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom center; }
+.hero-art .bubble { fill: rgba(255, 255, 255, .8); animation: bubbleSvg 2.8s linear infinite; }
+.hero-art .b-b { animation-delay: .7s; }
+.hero-art .b-c { animation-delay: 1.4s; }
+.hero-art .b-d { animation-delay: 2s; }
+.hero-art .bill-line { transform-box: fill-box; transform-origin: left center; animation: billIn .6s var(--ease) both; }
+.hero-art .tick { stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw .6s .9s var(--ease) forwards; }
+.hero-art .coin { transform-box: fill-box; transform-origin: center; animation: coinSpin 3.2s ease-in-out infinite; }
+.hero-art .c2 { animation-delay: -1.6s; }
+.hero-art .leaf-sway { transform-box: fill-box; transform-origin: bottom left; animation: sway 5s ease-in-out infinite; }
+@keyframes bubbleSvg { from { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } to { transform: translateY(-60px); opacity: 0; } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+@keyframes billIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes coinSpin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.15); } }
+@keyframes sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
+
+/* Dashboard hero: rising fizz */
+.hero-card .fizz { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.hero-card .fizz i { position: absolute; bottom: -12px; width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .35); animation: bubbleRise 5s linear infinite; }
+.hero-card .fizz i:nth-child(1) { left: 12%; animation-delay: 0s; }
+.hero-card .fizz i:nth-child(2) { left: 32%; width: 5px; height: 5px; animation-delay: 1.4s; }
+.hero-card .fizz i:nth-child(3) { left: 58%; width: 10px; height: 10px; animation-delay: .6s; }
+.hero-card .fizz i:nth-child(4) { left: 80%; width: 6px; height: 6px; animation-delay: 2.6s; }
+.hero-card .fizz i:nth-child(5) { left: 92%; width: 4px; height: 4px; animation-delay: 3.4s; }
+@keyframes bubbleRise { from { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(-260px); opacity: 0; } }
+
+/* Item tiles with emoji icons: bigger, friendlier targets */
+.product-tile .ph.emoji { font-size: 2.1rem; background: var(--brand-soft); font-weight: 400; }
+.product-tile:hover .ph.emoji { animation: wiggle .5s var(--ease); }
+.product-tile.is-added { animation: tilePop .35s var(--ease); }
+.product-tile .ur-name { font-family: 'Jameel Noori Nastaleeq', var(--bs-font-sans-serif); font-size: 1rem; line-height: 1.5; }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg) scale(1.08); } 75% { transform: rotate(8deg) scale(1.08); } }
+@keyframes tilePop { 0% { transform: scale(1); } 40% { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(34, 197, 94, .35); } 100% { transform: scale(1); } }
+
+/* Cart line added */
+.cart-line { animation: cartIn .3s var(--ease) both; }
+@keyframes cartIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+.is-urdu .cart-line { animation-name: cartInRtl; }
+@keyframes cartInRtl { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+
+/* Sale completed: coins burst */
+.coin-burst { position: relative; height: 96px; margin: 4px auto 8px; width: 100%; }
+.coin-burst > i { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fde68a, #f59e0b); box-shadow: inset 0 -2px 0 rgba(146, 64, 14, .35); font-style: normal; font-size: 10px; font-weight: 800; color: #92400e; display: grid; place-items: center; animation: coinOut 1.1s var(--ease) both; }
+.coin-burst > i:nth-child(1) { --dx: -70px; --dy: -40px; animation-delay: .05s; }
+.coin-burst > i:nth-child(2) { --dx: 0px; --dy: -58px; animation-delay: .12s; }
+.coin-burst > i:nth-child(3) { --dx: 70px; --dy: -40px; animation-delay: .19s; }
+.coin-burst > i:nth-child(4) { --dx: -36px; --dy: -8px; animation-delay: .26s; }
+.coin-burst > i:nth-child(5) { --dx: 36px; --dy: -8px; animation-delay: .33s; }
+.coin-burst .tick-big { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 2.6rem; color: #16a34a; animation: pop .5s var(--ease) both; }
+@keyframes coinOut { 0% { transform: translate(0, 0) scale(.4); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 1; } }
+
+/* Big, easy pay button on the sell screen */
+.pos-footer .btn-pay { font-size: 1.15rem; font-weight: 800; padding: .7rem 1.6rem; border-radius: 16px; background: var(--brand-grad); border: 0; color: #fff; box-shadow: 0 10px 22px -8px rgba(11, 122, 59, .6); }
+.pos-footer .btn-pay:disabled { opacity: .5; }
+
+/* Urdu layout: Nastaleeq needs more line height; keep numbers left-to-right */
+.is-urdu { line-height: 1.9; }
+.is-urdu .fw-semibold, .is-urdu .h5, .is-urdu h1, .is-urdu h2 { line-height: 1.6; }
+.is-urdu .nav-link, .is-urdu .nav-section, .is-urdu .btn { font-size: 1.02rem; }
+.is-urdu .feature-chips li { font-size: .9rem; }
+.is-urdu .money, .is-urdu .num, .is-urdu input[inputmode="decimal"], .is-urdu input[type="date"] { direction: ltr; unicode-bidi: isolate; }
+[dir="rtl"] .hero-card::before { right: auto; left: -60px; }
+[dir="rtl"] .hero-card::after { right: auto; left: 80px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-art .bubble, .hero-art .coin, .hero-art .bottle-wrap, .hero-card .fizz i, #splash .sp-b { animation: none !important; opacity: .6; }
+}
+.emoji-av { font-size: 1.25rem; background: var(--brand-soft); font-style: normal; }
+.product-tile { min-height: 124px; }
+.product-tile .ph.emoji { height: 46px; font-size: 1.7rem; }
+.product-tile { min-height: 0; }
+.product-tile > * { flex-shrink: 0; }

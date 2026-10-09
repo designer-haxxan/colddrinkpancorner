@@ -6,26 +6,27 @@ import { esc } from './core/utils.js';
 import { openDB } from './db/idb.js';
 import * as Auth from './services/auth.js';
 import * as Catalog from './services/catalog.js';
+import { initLang, setLang, toggleLang, t, lang } from './core/i18n.js';
 
 const $ = window.jQuery;
 
-// Route table: name → [loader, title, permission|null, icon, menu section]
+// Route table: name → [loader, title key, permission|null, icon, menu section key]
 const ROUTES = {
-  dashboard: [() => import('./modules/dashboard.js'), 'Dashboard', null, 'house', 'Main'],
-  pos: [() => import('./modules/pos.js'), 'New Sale', 'sale.create', 'cart-plus', 'Main'],
-  sales: [() => import('./modules/documents.js'), 'Sales', null, 'receipt', 'Main'],
-  purchase: [() => import('./modules/pos.js'), 'New Purchase', 'purchase.manage', null, null],
-  purchases: [() => import('./modules/documents.js'), 'Purchases', 'purchase.manage', 'bag', 'Main'],
-  returns: [() => import('./modules/documents.js'), 'Returns', null, 'arrow-return-left', 'Main'],
-  products: [() => import('./modules/products.js'), 'Products', null, 'box-seam', 'Inventory'],
-  stock: [() => import('./modules/stock.js'), 'Stock', null, 'boxes', 'Inventory'],
-  customers: [() => import('./modules/parties.js'), 'Customers', null, 'people', 'Parties'],
-  suppliers: [() => import('./modules/parties.js'), 'Suppliers', 'purchase.manage', 'truck', 'Parties'],
-  vouchers: [() => import('./modules/vouchers.js'), 'Cash Book & Payments', 'voucher.create', 'cash-coin', 'Accounts'],
-  accounts: [() => import('./modules/accounts.js'), 'Accounts', 'account.manage', 'bank', 'Accounts'],
-  reports: [() => import('./reports/reports.js'), 'Reports', 'reports.view', 'bar-chart-line', 'Accounts'],
-  backup: [() => import('./modules/backup.js'), 'Backup & Restore', 'backup.export', 'cloud-arrow-down', 'Administration'],
-  settings: [() => import('./modules/settings.js'), 'Settings', null, 'gear', 'Administration'],
+  dashboard: [() => import('./modules/dashboard.js'), 'nav.dashboard', null, 'house', 'sec.main'],
+  pos: [() => import('./modules/pos.js'), 'nav.pos', 'sale.create', 'cart-plus', 'sec.main'],
+  sales: [() => import('./modules/documents.js'), 'nav.sales', null, 'receipt', 'sec.main'],
+  purchase: [() => import('./modules/pos.js'), 'nav.purchases', 'purchase.manage', null, null],
+  purchases: [() => import('./modules/documents.js'), 'nav.purchases', 'purchase.manage', 'bag', 'sec.main'],
+  returns: [() => import('./modules/documents.js'), 'nav.returns', null, 'arrow-return-left', 'sec.main'],
+  products: [() => import('./modules/products.js'), 'nav.products', null, 'box-seam', 'sec.inventory'],
+  stock: [() => import('./modules/stock.js'), 'nav.stock', null, 'boxes', 'sec.inventory'],
+  customers: [() => import('./modules/parties.js'), 'nav.customers', null, 'people', 'sec.parties'],
+  suppliers: [() => import('./modules/parties.js'), 'nav.suppliers', 'purchase.manage', 'truck', 'sec.parties'],
+  vouchers: [() => import('./modules/vouchers.js'), 'nav.vouchers', 'voucher.create', 'cash-coin', 'sec.accounts'],
+  accounts: [() => import('./modules/accounts.js'), 'nav.accounts', 'account.manage', 'bank', 'sec.accounts'],
+  reports: [() => import('./reports/reports.js'), 'nav.reports', 'reports.view', 'bar-chart-line', 'sec.accounts'],
+  backup: [() => import('./modules/backup.js'), 'nav.backup', 'backup.export', 'cloud-arrow-down', 'sec.admin'],
+  settings: [() => import('./modules/settings.js'), 'nav.settings', null, 'gear', 'sec.admin'],
 };
 const FOCUS_ROUTES = new Set(['pos', 'purchase']);
 
@@ -96,15 +97,15 @@ function buildMenu() {
   let html = ''; let section = '';
   for (const [name, [, title, perm, icon, sec]] of Object.entries(ROUTES)) {
     if (!sec || (perm && !Auth.can(perm))) continue;
-    if (sec !== section) { section = sec; html += `<div class="nav-section">${esc(sec)}</div>`; }
-    html += `<a class="nav-link" href="#/${name}" data-route="${name}"><i class="bi bi-${icon}"></i>${esc(title)}</a>`;
+    if (sec !== section) { section = sec; html += `<div class="nav-section">${esc(t(sec))}</div>`; }
+    html += `<a class="nav-link" href="#/${name}" data-route="${name}"><i class="bi bi-${icon}"></i>${esc(t(title))}</a>`;
   }
   $('.nav-menu').html(html);
   const u = Auth.user();
   $('#user-name').text(u.name);
   $('#user-role').text(Auth.ROLES[u.role] || u.role);
   $('#user-avatar').text(UI.initials(u.name));
-  $('#brand-name').text(getSettings().business.name || CONFIG.APP_NAME);
+  $('#brand-name').text(getSettings().business.name || t('app.name'));
   $('#bottom-nav [data-route="pos"]').toggleClass('d-none', !Auth.can('sale.create'));
 }
 
@@ -114,7 +115,8 @@ async function route() {
   const token = ++routeToken;
   const parts = (location.hash.replace(/^#\/?/, '') || 'dashboard').split('/').map(decodeURIComponent);
   const name = ROUTES[parts[0]] ? parts[0] : 'dashboard';
-  const [loader, title, perm] = ROUTES[name];
+  const [loader, titleKey, perm] = ROUTES[name];
+  const title = t(titleKey);
   try { currentModule?.destroy?.(); } catch (e) { console.warn(e); }
   currentModule = null;
   bootstrap.Offcanvas.getInstance('#menu-offcanvas')?.hide();
@@ -181,7 +183,7 @@ function showLogin(reason = '') {
 
 $('#login-form').on('submit', async (e) => {
   e.preventDefault();
-  const $btn = $('#login-btn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span><span>Signing in…</span>');
+  const $btn = $('#login-btn').prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span><span>${t('login.signing')}</span>`);
   $('#login-error').addClass('d-none');
   try {
     await Auth.login($('#login-username').val(), $('#login-password').val());
@@ -190,7 +192,12 @@ $('#login-form').on('submit', async (e) => {
   } catch (err) {
     $('#login-error').text(err.message || String(err)).removeClass('d-none');
     $('.auth-card').removeClass('shake'); void $('.auth-card')[0].offsetWidth; $('.auth-card').addClass('shake');
-  } finally { $btn.prop('disabled', false).html('<span>Sign in</span><i class="bi bi-arrow-right"></i>'); }
+  } finally { $btn.prop('disabled', false).html(`<span>${t('login.btn')}</span><i class="bi bi-arrow-right"></i>`); }
+});
+$('#lang-btn, #lang-btn-login').on('click', toggleLang);
+document.addEventListener('lang:changed', () => {
+  renderConn(navigator.onLine ? 'online' : 'offline');
+  if (Auth.user()) { buildMenu(); route(); }
 });
 $('#toggle-pw').on('click', () => {
   const $i = $('#login-password'); const show = $i.attr('type') === 'password';
@@ -207,6 +214,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', a
 // ---------- Boot ----------
 (async function boot() {
   applyTheme();
+  initLang();
   registerSW();
   if (!window.jQuery || !window.bootstrap) return fatal('Required libraries failed to load. Connect to the internet once so the app can be cached for offline use.');
   try { await openDB(); } catch (e) { return fatal('Could not open the local database: ' + (e.message || e)); }
